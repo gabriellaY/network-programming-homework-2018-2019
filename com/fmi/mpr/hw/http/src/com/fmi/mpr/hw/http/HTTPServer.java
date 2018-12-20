@@ -74,11 +74,14 @@ public class HTTPServer {
 		if(ext.equals("png") || ext.equals("jpg") || ext.equals("jpeg")) {
 			try {
 				ps.println();
-				File file = new File("C:\\Users\\ASUS\\Desktop\\pictures\\"+fileName);
-				FileInputStream inFile = new FileInputStream(file);
+			
+				File file = new File(fileName);
+				String path = file.getAbsolutePath();
+				FileInputStream fis = new FileInputStream(path);
 				
-				sendPicture(inFile, ps);
-				inFile.close();
+				sendPicture(fis, ps);
+				
+				fis.close();
 			} catch(IOException e) {}
 		}
 		
@@ -86,20 +89,26 @@ public class HTTPServer {
 			try {
 				ps.println("Content-Type: video/mp4");
 				ps.println();
-				File file = new File("C:\\Users\\ASUS\\Documents\\Camtasia\\video_project\\"+fileName);
-				FileInputStream inFile = new FileInputStream(file);
 				
-				sendVideo(inFile, ps);
-				inFile.close();
+				File file = new File(fileName);
+				String path = file.getAbsolutePath();
+				FileInputStream fis = new FileInputStream(path);
+				
+				sendVideo(fis, ps);
+				
+				fis.close();
 			} catch(IOException e) {}
 		}
 		
 		if(ext.equals("txt")) {
 			try {
 				ps.println();
-				File file = new File("C:\\Users\\ASUS\\Desktop\\txtFiles\\"+fileName);
+				
+				File file = new File(fileName);
 				FileInputStream inFile = new FileInputStream(file);
+				
 				sendText(inFile, ps);
+				
 				inFile.close();
 			} catch(IOException e) {}
 		}
