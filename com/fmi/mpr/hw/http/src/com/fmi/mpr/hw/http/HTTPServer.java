@@ -70,10 +70,10 @@ public class HTTPServer {
 	public String getRequestMethod(PrintStream ps, String ext, String req) throws IOException {
 		String fileName = req.split(" ")[1].substring(1);
 		ps.println("HTTP/1.1 200 OK");
-		ps.println();
 		
 		if(ext.equals("png") || ext.equals("jpg") || ext.equals("jpeg")) {
 			try {
+				ps.println();
 				File file = new File("C:\\Users\\ASUS\\Desktop\\pictures\\"+fileName);
 				FileInputStream inFile = new FileInputStream(file);
 				
@@ -84,7 +84,9 @@ public class HTTPServer {
 		
 		if(ext.equals("mp4") || ext.equals("avi")) {
 			try {
-				File file = new File("C:\\Users\\ASUS\\Desktop\\videos\\"+fileName);
+				ps.println("Content-Type: video/mp4");
+				ps.println();
+				File file = new File("C:\\Users\\ASUS\\Documents\\Camtasia\\video_project\\"+fileName);
 				FileInputStream inFile = new FileInputStream(file);
 				
 				sendVideo(inFile, ps);
@@ -92,8 +94,9 @@ public class HTTPServer {
 			} catch(IOException e) {}
 		}
 		
-		if(ext.equals("png") || ext.equals("jpg") || ext.equals("jpeg")) {
+		if(ext.equals("txt")) {
 			try {
+				ps.println();
 				File file = new File("C:\\Users\\ASUS\\Desktop\\txtFiles\\"+fileName);
 				FileInputStream inFile = new FileInputStream(file);
 				sendText(inFile, ps);
@@ -105,21 +108,36 @@ public class HTTPServer {
 	
 	private void sendVideo(FileInputStream inFile, PrintStream ps) throws IOException {
 		
+		byte[] buffer = new byte[8192];
+		
+		int bytesRead = 0;
+		while((bytesRead = inFile.read(buffer, 0, 8192)) > 0) {
+			ps.write(buffer, 0, bytesRead);
+		}
+		ps.flush();
 	}
 
 	private void sendText(FileInputStream inFile, PrintStream ps) throws IOException {
 		
+		byte[] buffer = new byte[8192];
+		
+		int bytesRead = 0;
+		while((bytesRead = inFile.read(buffer, 0, 8192)) > 0) {
+			ps.write(buffer, 0, bytesRead);
+		}
+		ps.flush();
 	}
 
 	private void sendPicture(FileInputStream inFile, PrintStream ps) throws IOException {
-			byte[] buffer = new byte[4096];
-			
-			int bytesRead = 0;
-			while((bytesRead = inFile.read(buffer, 0, 4096)) > 0) {
-				ps.write(buffer, 0, bytesRead);
-			}
-			ps.flush();
+	
+		byte[] buffer = new byte[4096];
+		
+		int bytesRead = 0;
+		while((bytesRead = inFile.read(buffer, 0, 4096)) > 0) {
+			ps.write(buffer, 0, bytesRead);
 		}
+		ps.flush();
+	}
 
 	private String read(PrintStream ps, BufferedInputStream bis) throws IOException {
 		
@@ -143,24 +161,7 @@ public class HTTPServer {
 	
 	private void write(PrintStream ps, String res) {  //used in POST-method
 		if(ps != null) {
-			ps.println("HTTP/1.0 200 OK");
-			ps.println();
-			/*ps.println("<!DOCTYPE html>\n" + 
-					"<html>\n" + 
-					"<head>\n" + 
-					"	<title></title>\n" + 
-					"</head>\n" + 
-					"<body>\n" + 
-					"<h1>Hello</h1>" + 
-					"<form method=\"POST\" action=\"/\">" +
-						"<input type=\"text\" name=\"a\"/>" +
-						"<input type=\"text\" name=\"b\"/>" +
-						"<input type=\"text\" name=\"oper\"/>" +
-						"<input type=\"submit\" value=\"Send\">" +
-					"</form>" +
-					"<h2>" + (res == null || res.trim().isEmpty() ? "" : res) + "</h2>" +
-					"</body>\n" + 
-					"</html>"); */
+			
 		}
 	}
 
