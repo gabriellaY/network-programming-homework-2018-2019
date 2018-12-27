@@ -2,7 +2,6 @@ package com.fmi.mpr.hw.http;
 
 import java.net.*;
 import java.io.*;
-import java.util.Arrays;
 
 public class HTTPServer {
 	
@@ -21,6 +20,13 @@ public class HTTPServer {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	public void start() {
+		if(!isRunning) {
+			this.isRunning = true;
+			run();
 		}
 	}
 	
@@ -48,6 +54,45 @@ public class HTTPServer {
 			}
 		} 
 	
+	private String read(PrintStream ps, BufferedInputStream bis) throws IOException {
+		
+		if (bis != null) {
+			StringBuilder request = new StringBuilder();
+			
+			byte[] buffer = new byte[1024];
+			int bytesRead = 0;
+			
+			while ((bytesRead = bis.read(buffer, 0, 1024)) > 0) {
+				request.append(new String(buffer, 0, bytesRead));
+				
+				if (bytesRead < 1024) {
+					break;
+				}
+			}
+			return parseRequest(ps, request.toString());
+		}
+		return "Error";
+	}
+	
+	private void write(PrintStream ps, String res) {  //used in POST-method
+		if(ps != null) {
+			ps.println("HTTP/1.0 200 OK");
+			ps.println();
+				ps.println("<!DOCTYPE html>\n" + 
+						   "<html>\n" + 
+						   "<head>\n" + 
+						   "	<title></title>\n" + 
+						   "</head>\n" + 
+						   "<body>\n" + 
+						   "<form action=\"/action_page.php\">\n" + 
+						   "			  <input type=\"file\" name=\"pic\" accept=\"image/*\">\n" + 
+						   "			  <input type=\"submit\">\n" + 
+						   "			</form> " +
+						   "</body>\n" + 
+						   "</html>");
+		}
+	}
+	
 	private String parseRequest(PrintStream ps, String request) throws IOException {
 			
 			System.out.println(request);
@@ -62,7 +107,7 @@ public class HTTPServer {
 				return getRequestMethod(ps, extension, request);
 			}
 			if(requestType.equals("POST")) {
-				//return postRequestMethod();
+				return postRequestMethod(ps, lines);
 			}
 			return null;
 		}
@@ -82,7 +127,18 @@ public class HTTPServer {
 				sendPicture(fis, ps);
 				
 				fis.close();
-			} catch(IOException e) {}
+			} catch(IOException e) {
+				ps.println();
+				ps.println("<!DOCTYPE html>\n" + 
+						   "<html>\n" + 
+						   "<head>\n" + 
+						   "	<title></title>\n" + 
+						   "</head>\n" + 
+						   "<body>\n" + 
+						   			"ERROR! Please, try again with different file." +
+						   "</body>\n" + 
+						   "</html>");
+			}
 		}
 		
 		if(ext.equals("mp4") || ext.equals("avi")) {
@@ -97,7 +153,18 @@ public class HTTPServer {
 				sendVideo(fis, ps);
 				
 				fis.close();
-			} catch(IOException e) {}
+			} catch(IOException e) {
+				ps.println();
+				ps.println("<!DOCTYPE html>\n" + 
+						   "<html>\n" + 
+						   "<head>\n" + 
+						   "	<title></title>\n" + 
+						   "</head>\n" + 
+						   "<body>\n" + 
+						   			"ERROR! Please, try again with different file." +
+						   "</body>\n" + 
+						   "</html>");
+			}
 		}
 		
 		if(ext.equals("txt")) {
@@ -110,7 +177,18 @@ public class HTTPServer {
 				sendText(inFile, ps);
 				
 				inFile.close();
-			} catch(IOException e) {}
+			} catch(IOException e) {
+				ps.println();
+				ps.println("<!DOCTYPE html>\n" + 
+						   "<html>\n" + 
+						   "<head>\n" + 
+						   "	<title></title>\n" + 
+						   "</head>\n" + 
+						   "<body>\n" + 
+						   			"ERROR! Please, try again with different file." +
+						   "</body>\n" + 
+						   "</html>");
+			}
 		}
 		return null;
 	}
@@ -148,41 +226,30 @@ public class HTTPServer {
 		ps.flush();
 	}
 
-	private String read(PrintStream ps, BufferedInputStream bis) throws IOException {
-		
-		if (bis != null) {
-			StringBuilder request = new StringBuilder();
-			
-			byte[] buffer = new byte[1024];
-			int bytesRead = 0;
-			
-			while ((bytesRead = bis.read(buffer, 0, 1024)) > 0) {
-				request.append(new String(buffer, 0, bytesRead));
-				
-				if (bytesRead < 1024) {
-					break;
-				}
+	private String postRequestMethod(PrintStream ps, String[] lines)throws IOException {
+		StringBuilder body = new StringBuilder();
+		boolean readBody = false;
+		for (String line : lines) {
+			if (readBody) {
+				body.append(line);
 			}
-			return parseRequest(ps, request.toString());
+			if (line.trim().isEmpty()) {
+				readBody = true;
+			}
 		}
-		return "Error";
-	}
-	
-	private void write(PrintStream ps, String res) {  //used in POST-method
-		if(ps != null) {
-			
-		}
+		return parseBody(body.toString());	
 	}
 
-	public void start() {
-		if(!isRunning) {
-			this.isRunning = true;
-			run();
+//TODO
+	private String parseBody(String body) {
+		
+		if (body != null && !body.trim().isEmpty()) {
+			
 		}
-	}
+		return null;
+}
 	
 	public static void main(String[] args) throws IOException {
-		//System.out.println("Test");
 		HTTPServer server = new HTTPServer();
 		server.start();
 	}
