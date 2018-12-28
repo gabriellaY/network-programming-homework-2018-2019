@@ -238,7 +238,6 @@ public class HTTPServer {
 		return parseBody(body.toString(), client);	
 	}
 
-	//not sure if this is working
 	private String parseBody(String body, Socket client) throws IOException {
 		
 		if (body != null && !body.trim().isEmpty()) {
