@@ -224,7 +224,7 @@ public class HTTPServer {
 		ps.flush();
 	}
 
-	private String postRequestMethod(PrintStream ps, String[] lines)throws IOException {
+	private String postRequestMethod(PrintStream ps, String[] lines) throws IOException {
 		StringBuilder body = new StringBuilder();
 		boolean readBody = false;
 		for (String line : lines) {
@@ -242,19 +242,62 @@ public class HTTPServer {
 	private String parseBody(String body, Socket client) throws IOException {
 		
 		if (body != null && !body.trim().isEmpty()) {
-			String[] params = body.split("&");
-			String fileName = params[0].split("=")[1];
+			String[] params = body.split(";");
+			String fileName = params[2].split("=")[1].split("\"")[1];
 			
 			return send(fileName, body, client);
 		}
 		return null;
-}
-	//TODO
+	}
+
 	private String send(String fileName, String body, Socket client) throws IOException {
+		String type = fileName.split("\\.")[1];
+		BufferedInputStream bis = new BufferedInputStream(client.getInputStream());
+		String data = null;
 		
+		PrintStream ps = new PrintStream(client.getOutputStream(), true);
 		
-	return null;
-}
+		if(type.equals("jpg") || type.equals("jpeg") || type.equals("png") 
+			|| type.equals("mp4") || type.equals("avi")) {
+			
+			data = sendPicAndVideo(bis, ps);
+		}
+		if(type.equals("txt")) {
+			data = sendTxtFile(bis, ps);
+		}
+		
+		File file = new File(fileName);
+		FileOutputStream fos = new FileOutputStream(file.getAbsolutePath());
+		
+		fos.write(data.getBytes());
+		
+		fos.close();
+		System.out.println("SENT!");
+		
+		return null;
+	}
+
+	private String sendTxtFile(BufferedInputStream bis, PrintStream ps) throws IOException {
+		int bytesRead = 0;
+		byte[] buff = new byte[8192];
+		
+		while((bytesRead = bis.read(buff, 0, 8192)) > 0) {
+			ps.write(buff, 0 , bytesRead);
+		}
+		
+		return ps.toString();
+	}
+
+	private String sendPicAndVideo(BufferedInputStream bis, PrintStream ps) throws IOException {
+		int bytesRead = 0;
+		byte[] buff = new byte[8192];
+		
+		while((bytesRead = bis.read(buff, 0, 8192)) > 0) {
+			ps.write(buff, 0, bytesRead);
+		}
+		
+		return ps.toString();
+	}
 
 	public static void main(String[] args) throws IOException {
 		HTTPServer server = new HTTPServer();
