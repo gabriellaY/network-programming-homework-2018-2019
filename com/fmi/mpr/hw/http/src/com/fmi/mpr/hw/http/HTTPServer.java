@@ -6,6 +6,7 @@ import java.io.*;
 public class HTTPServer {
 	
 	private ServerSocket serv;
+	private Socket client;
 	private boolean isRunning;
 	
 	
@@ -79,17 +80,14 @@ public class HTTPServer {
 			ps.println("HTTP/1.0 200 OK");
 			ps.println();
 				ps.println("<!DOCTYPE html>\n" + 
-						   "<html>\n" + 
-						   "<head>\n" + 
-						   "	<title></title>\n" + 
-						   "</head>\n" + 
-						   "<body>\n" + 
-						   "<form action=\"/action_page.php\">\n" + 
-						   "			  <input type=\"file\" name=\"pic\" accept=\"image/*\">\n" + 
-						   "			  <input type=\"submit\">\n" + 
-						   "			</form> " +
-						   "</body>\n" + 
-						   "</html>");
+						"<form action=\"upload.php\" method=\"POST\" enctype=\"multipart/form-data\">\n" + 
+						"Select file to upload:\n" +
+						"<input type=\"file\" name=\"fileToUpload\" id=\"fileToUpload\">\n" +
+						"<input type=\"submit\" value=\"Upload File\" name=\"submit\">\n" +
+						"</form>" +
+						"<h2>" + (res == null || res.trim().isEmpty() ? "" : res) + "</h2>" +
+						"</body>\n" + 
+							"</html>");
 		}
 	}
 	
@@ -237,18 +235,27 @@ public class HTTPServer {
 				readBody = true;
 			}
 		}
-		return parseBody(body.toString());	
+		return parseBody(body.toString(), client);	
 	}
 
-//TODO
-	private String parseBody(String body) {
+	//not sure if this is working
+	private String parseBody(String body, Socket client) throws IOException {
 		
 		if (body != null && !body.trim().isEmpty()) {
+			String[] params = body.split("&");
+			String fileName = params[0].split("=")[1];
 			
+			return send(fileName, body, client);
 		}
 		return null;
 }
-	
+	//TODO
+	private String send(String fileName, String body, Socket client) throws IOException {
+		
+		
+	return null;
+}
+
 	public static void main(String[] args) throws IOException {
 		HTTPServer server = new HTTPServer();
 		server.start();
