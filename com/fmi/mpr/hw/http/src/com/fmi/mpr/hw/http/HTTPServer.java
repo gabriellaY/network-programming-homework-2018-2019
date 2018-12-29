@@ -10,7 +10,6 @@ public class HTTPServer {
 	private boolean isRunning;
 	private String fileName;
 	
-	
 	public HTTPServer() throws IOException {
 		this.serv = new ServerSocket(8080);
 	}
@@ -76,10 +75,10 @@ public class HTTPServer {
 		return "Error";
 	}
 	
-	private void write(PrintStream ps, String res) {  //used in POST-method
+	private void write(PrintStream ps, String res) {
 		if(ps != null) {
-			ps.println("HTTP/1.0 200 OK");
-			ps.println();
+			//ps.println("HTTP/1.0 200 OK");
+			//ps.println();
 				ps.println("<!DOCTYPE html>\n" + 
 						"<form action=\"upload.php\" method=\"POST\" enctype=\"multipart/form-data\">\n" + 
 						"Select file to upload:\n" +
@@ -254,6 +253,9 @@ public class HTTPServer {
 	}
 
 	private String send(String type, String body, PrintStream ps) throws IOException {
+		ps.println("HTTP/1.0 200 OK");
+		ps.println();
+		
 		File file = new File(fileName);
 		FileOutputStream fos = new FileOutputStream(file.getAbsolutePath());
 		
@@ -283,9 +285,6 @@ public class HTTPServer {
 		inFile.delete();
 		tmpF.renameTo(inFile);
 		
-		System.out.println("SENT!");
-		ps.println("HTTP/1.0 200 OK");
-		ps.println();
 		ps.println("<!DOCTYPE html>\n" + 
 				   "<html>\n" + 
 				   "<head>\n" + 
@@ -296,6 +295,8 @@ public class HTTPServer {
 				   "</body>\n" + 
 				   "</html>");
 	
+		System.out.println("SENT!");
+		
 		return null;
 	}
 
