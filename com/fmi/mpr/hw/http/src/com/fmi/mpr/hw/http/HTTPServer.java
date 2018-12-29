@@ -77,8 +77,10 @@ public class HTTPServer {
 	
 	private void write(PrintStream ps, String res) {
 		if(ps != null) {
-			//ps.println("HTTP/1.0 200 OK");
-			//ps.println();
+			
+			/*ps.println("HTTP/1.0 200 OK");
+			ps.println();*/
+			
 				ps.println("<!DOCTYPE html>\n" + 
 						"<form action=\"upload.php\" method=\"POST\" enctype=\"multipart/form-data\">\n" + 
 						"Select file to upload:\n" +
@@ -227,6 +229,7 @@ public class HTTPServer {
 	private String postRequestMethod(PrintStream ps, String[] lines) throws IOException {
 		StringBuilder body = new StringBuilder();
 		boolean readBody = false;
+		
 		for (String line : lines) {
 			if (readBody) {
 				body.append(line);
