@@ -8,6 +8,7 @@ public class HTTPServer {
 	private ServerSocket serv;
 	private Socket client;
 	private boolean isRunning;
+	private String fileName;
 	
 	
 	public HTTPServer() throws IOException {
@@ -235,67 +236,67 @@ public class HTTPServer {
 				readBody = true;
 			}
 		}
-		return parseBody(body.toString(), client);	
+		return parseBody(body.toString(), client, ps);	
 	}
 
-	private String parseBody(String body, Socket client) throws IOException {
+	private String parseBody(String body, Socket client, PrintStream ps) throws IOException {
 		
 		if (body != null && !body.trim().isEmpty()) {
 			String[] params = body.split(";");
-			String fileName = params[2].split("=")[1].split("\"")[1];
 			
-			return send(fileName, body, client);
+			fileName = params[2].split("=")[1].split("\"")[1];
+			
+			String type = body.split(":")[2].split(" ")[1].split("\r")[0];
+			
+			return send(type, body, ps);
 		}
 		return null;
 	}
 
-	private String send(String fileName, String body, Socket client) throws IOException {
-		String type = fileName.split("\\.")[1];
-		BufferedInputStream bis = new BufferedInputStream(client.getInputStream());
-		String data = null;
-		
-		PrintStream ps = new PrintStream(client.getOutputStream(), true);
-		
-		if(type.equals("jpg") || type.equals("jpeg") || type.equals("png") 
-			|| type.equals("mp4") || type.equals("avi")) {
-			
-			data = sendPicAndVideo(bis, ps);
-		}
-		if(type.equals("txt")) {
-			data = sendTxtFile(bis, ps);
-		}
-		
+	private String send(String type, String body, PrintStream ps) throws IOException {
 		File file = new File(fileName);
 		FileOutputStream fos = new FileOutputStream(file.getAbsolutePath());
 		
-		fos.write(data.getBytes());
-		
+		fos.write(body.getBytes());
 		fos.close();
+		
+		File inFile = new File(fileName);
+		File tmpF = new File(inFile.getAbsolutePath()+".tmp");
+		
+		BufferedReader br = new BufferedReader(new FileReader(fileName));
+		PrintWriter pw = new PrintWriter(new FileWriter(tmpF));
+		String line = null;
+		
+		for(int i = 0; i <= 4; i++) {
+			br.readLine();
+		}
+		
+		while((line = br.readLine()) != null) {
+			if(line.contains("-----------")) {
+				break;
+			}
+			pw.println(line);
+			pw.flush();
+		}
+		pw.close();
+		br.close();
+		inFile.delete();
+		tmpF.renameTo(inFile);
+		
 		System.out.println("SENT!");
-		
+		ps.println("HTTP/1.0 200 OK");
+		ps.println();
+		ps.println("<!DOCTYPE html>\n" + 
+				   "<html>\n" + 
+				   "<head>\n" + 
+				   "	<title></title>\n" + 
+				   "</head>\n" + 
+				   "<body>\n" + 
+				   			"SENT!" +
+				   "</body>\n" + 
+				   "</html>");
+	
 		return null;
-	}
-
-	private String sendTxtFile(BufferedInputStream bis, PrintStream ps) throws IOException {
-		int bytesRead = 0;
-		byte[] buff = new byte[8192];
-		
-		while((bytesRead = bis.read(buff, 0, 8192)) > 0) {
-			ps.write(buff, 0 , bytesRead);
-		}
-		
-		return ps.toString();
-	}
-
-	private String sendPicAndVideo(BufferedInputStream bis, PrintStream ps) throws IOException {
-		int bytesRead = 0;
-		byte[] buff = new byte[8192];
-		
-		while((bytesRead = bis.read(buff, 0, 8192)) > 0) {
-			ps.write(buff, 0, bytesRead);
-		}
-		
-		return ps.toString();
 	}
 
 	public static void main(String[] args) throws IOException {
